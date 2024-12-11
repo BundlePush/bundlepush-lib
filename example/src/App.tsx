@@ -1,12 +1,15 @@
 import { Text, View, StyleSheet } from 'react-native';
-import { multiply } from 'bundlepush';
-
-const result = multiply(3, 7);
+import { performOTACheck } from 'bundlepush';
+import { useEffect } from 'react';
 
 export default function App() {
+  useEffect(() => {
+    performOTACheck();
+  }, []);
+
   return (
     <View style={styles.container}>
-      <Text>Result: {result}</Text>
+      <Text>Hello World</Text>
     </View>
   );
 }
