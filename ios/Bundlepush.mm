@@ -29,6 +29,12 @@ NSString *MD5HashOfFile(NSString *filePath) {
     return [md5String copy];
 }
 
+- (NSURL *)workdir
+{
+  return [[NSURL fileURLWithPath:[NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) firstObject]] URLByAppendingPathComponent:@"bp_workdir"
+                                                                                                                                                isDirectory:YES];
+}
+
 - (void)downloadFileFromURL:(NSURL *)url
               toDestination:(NSURL *)destinationURL
           completionHandler:(void (^)())completionHandler
@@ -59,16 +65,14 @@ NSString *MD5HashOfFile(NSString *filePath) {
 
 - (BOOL)checkBundleFolderAvailable
 {
-  NSURL *workdir = [[[NSBundle mainBundle] bundleURL] URLByAppendingPathComponent:@"bp_workdir" isDirectory:YES];
-
   BOOL isDirectory;
-  BOOL exists = [[NSFileManager defaultManager] fileExistsAtPath:[workdir absoluteString]
+  BOOL exists = [[NSFileManager defaultManager] fileExistsAtPath:[[self workdir] absoluteString]
                                                      isDirectory:&isDirectory];
   if (exists) {
     return isDirectory;
   }
   NSError *error = nil;
-  BOOL result = [[NSFileManager defaultManager] createDirectoryAtURL:workdir
+  BOOL result = [[NSFileManager defaultManager] createDirectoryAtURL:[self workdir]
                                          withIntermediateDirectories:YES
                                                           attributes:nil
                                                                error:&error];
@@ -80,23 +84,26 @@ NSString *MD5HashOfFile(NSString *filePath) {
 
 - (void)performOTACheck
 {
-  // Check if there's a bundle not extracted (bp_workdir/latest.zip)
-  //   Extract it immediately and apply
-  //   Rename (bp_workdir/applied.zip)
+  // Check if there's a extracted bundle available (bp_workdir/current_bundle)
+  //   Use it as bundle (bp_workdir/current_bundle/main.jsbundle)
+  //   Otherwise, use the default bundle from app
   // Async:
-  //   Perform API call to check for the latest bundle
+  //   Perform API call to check for the latest bundle (PENDING)
   //   If available:
-  //     Check if md5 matches bp_workdir/latest.zip or bp_workdir/applied.zip
-  //     If matches, stop flow
+  //     Check if md5 matches bp_workdir/current.zip (PENDING)
+  //     If matches, stop flow. Otherwise continue (PENDING)
   //     Download the new bundle to bp_workdir/downloaded.zip *
-  //     Check if md5 matches - if so, rename to bp_workdir/latest.zip
+  //     Check if md5 matches - if so (PENDING)
+  //       Extract it to bp_workdir/current_bundle (PENDING)
+  //       Rename it to bp_workdir/current.zip *
+  
 
   BOOL available = [self checkBundleFolderAvailable];
   if (!available) {
     return;
   }
   
-  NSURL *downloadDestination = [[[NSBundle mainBundle] bundleURL] URLByAppendingPathComponent:@"bp_workdir/downloaded.zip"];
+  NSURL *downloadDestination = [[self workdir] URLByAppendingPathComponent:@"downloaded.zip"];
   NSURL *downloadURL = [NSURL URLWithString:@"https://iuri.s3.us-east-1.amazonaws.com/bundle.zip"];
   NSLog(@"File will be downloaded to %@", downloadDestination);
   [self downloadFileFromURL:downloadURL
@@ -104,10 +111,11 @@ NSString *MD5HashOfFile(NSString *filePath) {
           completionHandler:^() {
     NSString *md5 = MD5HashOfFile([downloadDestination path]);
     NSLog(@"Downloaded file md5 = %@", md5);
-    // Add if to check if hashes match
-    NSURL *latest = [[[NSBundle mainBundle] bundleURL] URLByAppendingPathComponent:@"bp_workdir/latest.zip"];
+    // TODO Add if to check if hashes match
+    // TODO extract file
+    NSURL *currentZip = [[self workdir] URLByAppendingPathComponent:@"current.zip"];
     [[NSFileManager defaultManager] moveItemAtURL:downloadDestination
-                                            toURL:latest
+                                            toURL:currentZip
                                             error:nil];
   }];
 }
