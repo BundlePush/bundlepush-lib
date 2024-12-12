@@ -1,6 +1,7 @@
 #import "Bundlepush.h"
 #import <Foundation/Foundation.h>
 #import <CommonCrypto/CommonDigest.h>
+#import <SSZipArchive/SSZipArchive.h>
 
 
 @implementation Bundlepush
@@ -43,20 +44,22 @@ NSString *MD5HashOfFile(NSString *filePath) {
     NSLog(@"Starting download from: %@", [url absoluteString]);
     NSURLSessionDownloadTask *downloadTask = [session downloadTaskWithURL:url
                                                         completionHandler:^(NSURL * _Nullable location, NSURLResponse * _Nullable response, NSError * _Nullable error) {
-        if (error) {
-            NSLog(@"Download error: %@", error.localizedDescription);
-            return;
-        }
-        NSError *fileError;
-        [[NSFileManager defaultManager] moveItemAtURL:location
-                                                toURL:destinationURL
-                                                error:&fileError];
-        if (fileError) {
-          NSLog(@"File move error: %@", fileError.localizedDescription);
-        } else {
-          NSLog(@"File downloaded successfully to %@", destinationURL);
-          completionHandler();
-        }
+      if (error) {
+          NSLog(@"Download error: %@", error.localizedDescription);
+          return;
+      }
+      [[NSFileManager defaultManager] removeItemAtURL:destinationURL error:nil];
+      
+      NSError *fileError;
+      [[NSFileManager defaultManager] moveItemAtURL:location
+                                              toURL:destinationURL
+                                              error:&fileError];
+      if (fileError) {
+        NSLog(@"File move error: %@", fileError.localizedDescription);
+      } else {
+        NSLog(@"File downloaded successfully to %@", destinationURL);
+        completionHandler();
+      }
     }];
 
     // Start the download task
@@ -85,6 +88,7 @@ NSString *MD5HashOfFile(NSString *filePath) {
 - (void)performOTACheck
 {
   // Check if there's a extracted bundle available (bp_workdir/current_bundle)
+  //   Need to check if it's from an incompatible version
   //   Use it as bundle (bp_workdir/current_bundle/main.jsbundle)
   //   Otherwise, use the default bundle from app
   // Async:
@@ -96,25 +100,38 @@ NSString *MD5HashOfFile(NSString *filePath) {
   //     Check if md5 matches - if so (PENDING)
   //       Extract it to bp_workdir/current_bundle (PENDING)
   //       Rename it to bp_workdir/current.zip *
-  
 
   BOOL available = [self checkBundleFolderAvailable];
   if (!available) {
     return;
   }
   
-  NSURL *downloadDestination = [[self workdir] URLByAppendingPathComponent:@"downloaded.zip"];
+  // Download the new bundle to bp_workdir/downloaded.zip
+  NSURL *downloadedZip = [[self workdir] URLByAppendingPathComponent:@"downloaded.zip"];
   NSURL *downloadURL = [NSURL URLWithString:@"https://iuri.s3.us-east-1.amazonaws.com/bundle.zip"];
-  NSLog(@"File will be downloaded to %@", downloadDestination);
+  NSLog(@"File will be downloaded to %@", downloadedZip);
   [self downloadFileFromURL:downloadURL
-              toDestination:downloadDestination
+              toDestination:downloadedZip
           completionHandler:^() {
-    NSString *md5 = MD5HashOfFile([downloadDestination path]);
+    NSString *md5 = MD5HashOfFile([downloadedZip path]);
     NSLog(@"Downloaded file md5 = %@", md5);
     // TODO Add if to check if hashes match
-    // TODO extract file
+    // TODO before extracting, remove the current_bundle directory
+    // Extract zip to bp_workdir/current_bundle (PENDING)
+    NSURL *extractPath = [[self workdir] URLByAppendingPathComponent:@"current_bundle" isDirectory:YES];
+    NSError *zipError = nil;
+    BOOL successUnzip = [SSZipArchive unzipFileAtPath:[downloadedZip path]
+                                        toDestination:[extractPath path]
+                                            overwrite:YES
+                                             password:nil
+                                                error:&zipError];
+    if (!successUnzip) {
+      NSLog(@"Error unzipping - %@", zipError);
+      return;
+    }
+    
     NSURL *currentZip = [[self workdir] URLByAppendingPathComponent:@"current.zip"];
-    [[NSFileManager defaultManager] moveItemAtURL:downloadDestination
+    [[NSFileManager defaultManager] moveItemAtURL:downloadedZip
                                             toURL:currentZip
                                             error:nil];
   }];

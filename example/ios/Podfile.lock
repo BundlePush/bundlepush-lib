@@ -20,6 +20,7 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
+    - SSZipArchive
     - Yoga
   - DoubleConversion (1.1.6)
   - FBLazyVector (0.76.5)
@@ -1531,6 +1532,7 @@ PODS:
     - React-perflogger (= 0.76.5)
     - React-utils (= 0.76.5)
   - SocketRocket (0.7.1)
+  - SSZipArchive (2.4.3)
   - Yoga (0.0.0)
 
 DEPENDENCIES:
@@ -1604,6 +1606,7 @@ DEPENDENCIES:
 SPEC REPOS:
   trunk:
     - SocketRocket
+    - SSZipArchive
 
 EXTERNAL SOURCES:
   boost:
@@ -1738,7 +1741,7 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   boost: 1dca942403ed9342f98334bf4c3621f011aa7946
-  bundlepush: a5507f9d11c66554f0e3d897659cb097d69d139a
+  bundlepush: 15dfa1112347cad101f2983ae3a0589d605265cb
   DoubleConversion: f16ae600a246532c4020132d54af21d0ddb2a385
   FBLazyVector: 1bf99bb46c6af9a2712592e707347315f23947aa
   fmt: 10c6e61f4be25dc963c36bd73fc7b1705fe975be
@@ -1801,6 +1804,7 @@ SPEC CHECKSUMS:
   ReactCodegen: daa13d9e48c9bdb1daac4bd694b9dd54e06681df
   ReactCommon: a6b87a7591591f7a52d9c0fec3aa05e0620d5dd3
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
+  SSZipArchive: fe6a26b2a54d5a0890f2567b5cc6de5caa600aef
   Yoga: fcc198acd4a55599b3468cfb6ebc526baff5f06e
 
 PODFILE CHECKSUM: dd36328d2fc757a18b5d4fd00a5a1f68c5dba837

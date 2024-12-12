@@ -28,4 +28,9 @@
 #endif
 }
 
+//- (NSURL *)workdir
+//{
+//  return [[NSURL fileURLWithPath:[NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) firstObject]] URLByAppendingPathComponent:@"bp_workdir"
+//                      isDirectory:YES];
+//}
 @end
