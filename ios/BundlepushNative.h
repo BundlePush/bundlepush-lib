@@ -2,6 +2,6 @@
 
 + (NSURL *)latestBundle;
 
-+ (void)performOTACheck;
++ (void)performOTACheck:(NSString *)appId;
 
 @end

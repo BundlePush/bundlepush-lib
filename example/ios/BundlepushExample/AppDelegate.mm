@@ -12,7 +12,7 @@
   // They will be passed down to the ViewController used by React Native.
   self.initialProps = @{};
   
-  [BundlepushNative performOTACheck];
+  [BundlepushNative performOTACheck:@"app-id"];
 
   return [super application:application didFinishLaunchingWithOptions:launchOptions];
 }

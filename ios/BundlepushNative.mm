@@ -41,6 +41,38 @@ NSString *MD5HashOfFile(NSString *filePath) {
                                                                 isDirectory:YES];
 }
 
++ (void)requestBundleForAppId:(NSString *)appId
+        withCompletionHandler:(void (^)(NSString *md5, NSURL *bundleURL))completionHandler
+{
+  NSString *urlString = [NSString stringWithFormat:@"https://y83x5afgd2.api.quickmocker.com/bundle?platform=ios&id=%@&version_code=%@", appId, [self getBuildNumber]];
+  NSURL *url = [NSURL URLWithString:urlString];
+  NSURLSession *session = [NSURLSession sharedSession];
+  
+  NSURLSessionDataTask *dataTask = [session dataTaskWithURL:url
+                                          completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
+    if (error) {
+      NSLog(@"Error: %@", error.localizedDescription);
+      return;
+    }
+
+    if (data) {
+      NSError *jsonError;
+      NSDictionary *json = [NSJSONSerialization JSONObjectWithData:data options:0 error:&jsonError];
+      if (jsonError) {
+        NSLog(@"JSON Parsing Error: %@", jsonError.localizedDescription);
+      } else {
+        NSString *md5 = [json objectForKey:@"md5"];
+        NSString *bundle = [json objectForKey:@"url"];
+        if (md5 && bundle) {
+          completionHandler(md5, [NSURL URLWithString:bundle]);
+        }
+      }
+    }
+  }];
+  
+  [dataTask resume];
+}
+
 + (void)downloadFileFromURL:(NSURL *)url
               toDestination:(NSURL *)destinationURL
           completionHandler:(void (^)())completionHandler
@@ -89,14 +121,14 @@ NSString *MD5HashOfFile(NSString *filePath) {
   return result;
 }
 
-+ (void)performOTACheck
++ (void)performOTACheck:(NSString *)appId
 {
-  // Check if there's an extracted bundle available (bp_workdir/<version_code>/current_bundle) (PENDING)
-  //   Use it as bundle (bp_workdir/<version_code>/current_bundle/main.jsbundle) (PENDING)
-  //   Otherwise, use the default bundle from app (PENDING)
+  // Check if there's an extracted bundle available (bp_workdir/<version_code>/current_bundle) *
+  //   Use it as bundle (bp_workdir/<version_code>/current_bundle/main.jsbundle) *
+  //   Otherwise, use the default bundle from app *
   // Async:
-  //   Perform API call to check for the latest bundle (PENDING)
-  //   If available:
+  //   Perform API call to check for the latest bundle *
+  //   If available: *
   //     Check if md5 matches bp_workdir/<version_code>/current.zip (PENDING)
   //     If doesn't match, stop flow. Otherwise continue (PENDING)
   //     Download the new bundle to bp_workdir/<version_code>/downloaded.zip *
@@ -104,7 +136,6 @@ NSString *MD5HashOfFile(NSString *filePath) {
   //       Extract it to bp_workdir/<version_code>/current_bundle *
   //       Rename it to bp_workdir/<version_code>/current.zip *
   
-  // TODO add <version_code> to path, here and in latestBundle
   // TODO standardize logs
 
   BOOL available = [self checkBundleFolderAvailable];
@@ -112,35 +143,37 @@ NSString *MD5HashOfFile(NSString *filePath) {
     return;
   }
   
-  // Download the new bundle to bp_workdir/downloaded.zip
-  NSURL *downloadedZip = [[self workdir] URLByAppendingPathComponent:@"downloaded.zip"];
-  NSURL *downloadURL = [NSURL URLWithString:@"https://iuri.s3.us-east-1.amazonaws.com/bundle.zip"];
-  NSLog(@"File will be downloaded to %@", downloadedZip);
-  [self downloadFileFromURL:downloadURL
-              toDestination:downloadedZip
-          completionHandler:^() {
-    NSString *md5 = MD5HashOfFile([downloadedZip path]);
-    NSLog(@"Downloaded file md5 = %@", md5);
-    // TODO Add if to check if hashes match
-    // TODO before extracting, remove the current_bundle directory
-    NSURL *extractPath = [[self workdir] URLByAppendingPathComponent:@"current_bundle" isDirectory:YES];
-    [[NSFileManager defaultManager] removeItemAtURL:extractPath error:nil];
-    NSError *zipError = nil;
-    BOOL successUnzip = [SSZipArchive unzipFileAtPath:[downloadedZip path]
-                                        toDestination:[extractPath path]
-                                            overwrite:YES
-                                             password:nil
-                                                error:&zipError];
-    if (!successUnzip) {
-      NSLog(@"Error unzipping - %@", zipError);
-      return;
-    }
-    
-    NSURL *currentZip = [[self workdir] URLByAppendingPathComponent:@"current.zip"];
-    [[NSFileManager defaultManager] removeItemAtURL:currentZip error:nil];
-    [[NSFileManager defaultManager] moveItemAtURL:downloadedZip
-                                            toURL:currentZip
-                                            error:nil];
+  [self requestBundleForAppId:@"app-id"
+        withCompletionHandler:^(NSString *md5, NSURL *bundleURL) {
+    // Download the new bundle to bp_workdir/downloaded.zip
+    NSURL *downloadedZip = [[self workdir] URLByAppendingPathComponent:@"downloaded.zip"];
+    NSLog(@"File will be downloaded to %@", downloadedZip);
+    [self downloadFileFromURL:bundleURL
+                toDestination:downloadedZip
+            completionHandler:^() {
+      NSString *downloadMd5 = MD5HashOfFile([downloadedZip path]);
+      NSLog(@"Downloaded file md5 = %@ - expected is: %@", downloadMd5, md5);
+      // TODO Add if to check if hashes match
+      // TODO before extracting, remove the current_bundle directory
+      NSURL *extractPath = [[self workdir] URLByAppendingPathComponent:@"current_bundle" isDirectory:YES];
+      [[NSFileManager defaultManager] removeItemAtURL:extractPath error:nil];
+      NSError *zipError = nil;
+      BOOL successUnzip = [SSZipArchive unzipFileAtPath:[downloadedZip path]
+                                          toDestination:[extractPath path]
+                                              overwrite:YES
+                                               password:nil
+                                                  error:&zipError];
+      if (!successUnzip) {
+        NSLog(@"Error unzipping - %@", zipError);
+        return;
+      }
+      
+      NSURL *currentZip = [[self workdir] URLByAppendingPathComponent:@"current.zip"];
+      [[NSFileManager defaultManager] removeItemAtURL:currentZip error:nil];
+      [[NSFileManager defaultManager] moveItemAtURL:downloadedZip
+                                              toURL:currentZip
+                                              error:nil];
+    }];
   }];
 }
 
