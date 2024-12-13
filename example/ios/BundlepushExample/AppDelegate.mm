@@ -1,6 +1,7 @@
 #import "AppDelegate.h"
 
 #import <React/RCTBundleURLProvider.h>
+#import <bundlepush/BundlepushNative.h>
 
 @implementation AppDelegate
 
@@ -10,6 +11,8 @@
   // You can add your custom initial props in the dictionary below.
   // They will be passed down to the ViewController used by React Native.
   self.initialProps = @{};
+  
+  [BundlepushNative performOTACheck];
 
   return [super application:application didFinishLaunchingWithOptions:launchOptions];
 }
@@ -21,6 +24,12 @@
 
 - (NSURL *)bundleURL
 {
+  NSURL *latest = [BundlepushNative latestBundle];
+  NSLog(@"latest: %@", latest);
+  if (latest != nil) {
+    NSLog(@"using latest: %@", latest);
+    return latest;
+  }
 #if DEBUG
   return [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:@"index"];
 #else
@@ -28,9 +37,4 @@
 #endif
 }
 
-//- (NSURL *)workdir
-//{
-//  return [[NSURL fileURLWithPath:[NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) firstObject]] URLByAppendingPathComponent:@"bp_workdir"
-//                      isDirectory:YES];
-//}
 @end

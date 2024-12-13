@@ -1,12 +1,6 @@
 import { Text, View, StyleSheet } from 'react-native';
-import { performOTACheck } from 'bundlepush';
-import { useEffect } from 'react';
 
 export default function App() {
-  useEffect(() => {
-    performOTACheck();
-  }, []);
-
   return (
     <View style={styles.container}>
       <Text>Hello World</Text>
