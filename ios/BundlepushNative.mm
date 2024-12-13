@@ -26,10 +26,18 @@ NSString *MD5HashOfFile(NSString *filePath) {
   return [md5String copy];
 }
 
++ (NSString *)getBuildNumber
+{
+  NSString *bundleVersion = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"];
+  return bundleVersion;
+}
+
+
 + (NSURL *)workdir
 {
   NSString *documentsPath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) firstObject];
-  return [[NSURL fileURLWithPath:documentsPath] URLByAppendingPathComponent:@"bp_workdir"
+  NSString *buildNumber = [self getBuildNumber];
+  return [[NSURL fileURLWithPath:documentsPath] URLByAppendingPathComponent:[NSString stringWithFormat:@"bp_workdir/%@", buildNumber]
                                                                 isDirectory:YES];
 }
 
@@ -65,13 +73,13 @@ NSString *MD5HashOfFile(NSString *filePath) {
 + (BOOL)checkBundleFolderAvailable
 {
   BOOL isDirectory;
-  BOOL exists = [[NSFileManager defaultManager] fileExistsAtPath:[[[self class] workdir] absoluteString]
+  BOOL exists = [[NSFileManager defaultManager] fileExistsAtPath:[[self workdir] absoluteString]
                                                      isDirectory:&isDirectory];
   if (exists) {
     return isDirectory;
   }
   NSError *error = nil;
-  BOOL result = [[NSFileManager defaultManager] createDirectoryAtURL:[[self class] workdir]
+  BOOL result = [[NSFileManager defaultManager] createDirectoryAtURL:[self workdir]
                                          withIntermediateDirectories:YES
                                                           attributes:nil
                                                                error:&error];
@@ -105,7 +113,7 @@ NSString *MD5HashOfFile(NSString *filePath) {
   }
   
   // Download the new bundle to bp_workdir/downloaded.zip
-  NSURL *downloadedZip = [[[self class] workdir] URLByAppendingPathComponent:@"downloaded.zip"];
+  NSURL *downloadedZip = [[self workdir] URLByAppendingPathComponent:@"downloaded.zip"];
   NSURL *downloadURL = [NSURL URLWithString:@"https://iuri.s3.us-east-1.amazonaws.com/bundle.zip"];
   NSLog(@"File will be downloaded to %@", downloadedZip);
   [self downloadFileFromURL:downloadURL
@@ -115,7 +123,8 @@ NSString *MD5HashOfFile(NSString *filePath) {
     NSLog(@"Downloaded file md5 = %@", md5);
     // TODO Add if to check if hashes match
     // TODO before extracting, remove the current_bundle directory
-    NSURL *extractPath = [[[self class] workdir] URLByAppendingPathComponent:@"current_bundle" isDirectory:YES];
+    NSURL *extractPath = [[self workdir] URLByAppendingPathComponent:@"current_bundle" isDirectory:YES];
+    [[NSFileManager defaultManager] removeItemAtURL:extractPath error:nil];
     NSError *zipError = nil;
     BOOL successUnzip = [SSZipArchive unzipFileAtPath:[downloadedZip path]
                                         toDestination:[extractPath path]
@@ -127,7 +136,8 @@ NSString *MD5HashOfFile(NSString *filePath) {
       return;
     }
     
-    NSURL *currentZip = [[[self class] workdir] URLByAppendingPathComponent:@"current.zip"];
+    NSURL *currentZip = [[self workdir] URLByAppendingPathComponent:@"current.zip"];
+    [[NSFileManager defaultManager] removeItemAtURL:currentZip error:nil];
     [[NSFileManager defaultManager] moveItemAtURL:downloadedZip
                                             toURL:currentZip
                                             error:nil];
