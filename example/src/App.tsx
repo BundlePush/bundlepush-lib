@@ -1,9 +1,10 @@
-import { Text, View, StyleSheet } from 'react-native';
+import { Text, View, StyleSheet, Image } from 'react-native';
 
 export default function App() {
   return (
     <View style={styles.container}>
       <Text>Hello World</Text>
+      <Image source={require('./rwt-icon.png')} />
     </View>
   );
 }
