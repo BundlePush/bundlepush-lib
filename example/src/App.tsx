@@ -4,6 +4,11 @@ export default function App() {
   return (
     <View style={styles.container}>
       <Text>Hello World</Text>
+      <Text>Hello World</Text>
+      <Text>Hello World</Text>
+      <Text>Hello World</Text>
+      <Text>Hello World</Text>
+      <Text>Hello World</Text>
       <Image source={require('./rwt-icon.png')} />
     </View>
   );

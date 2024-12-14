@@ -65,6 +65,8 @@ NSString *MD5HashOfFile(NSString *filePath) {
         NSString *bundle = [json objectForKey:@"url"];
         if (md5 && bundle) {
           completionHandler(md5, [NSURL URLWithString:bundle]);
+        } else {
+          NSLog(@"No bundle updates available");
         }
       }
     }
@@ -145,7 +147,15 @@ NSString *MD5HashOfFile(NSString *filePath) {
   
   [self requestBundleForAppId:@"app-id"
         withCompletionHandler:^(NSString *md5, NSURL *bundleURL) {
-    // Download the new bundle to bp_workdir/downloaded.zip
+    NSURL *currentZip = [[self workdir] URLByAppendingPathComponent:@"current.zip"];
+    NSString *currentZipMD5 = MD5HashOfFile([currentZip path]);
+    
+    if ([currentZipMD5 isEqualToString:md5]) {
+      NSLog(@"Current bundle is up to date with the server (md5 = %@)", md5);
+      return;
+    }
+    
+    // Download the new bundle to bp_workdir/<version_code>/downloaded.zip
     NSURL *downloadedZip = [[self workdir] URLByAppendingPathComponent:@"downloaded.zip"];
     NSLog(@"File will be downloaded to %@", downloadedZip);
     [self downloadFileFromURL:bundleURL
@@ -154,7 +164,6 @@ NSString *MD5HashOfFile(NSString *filePath) {
       NSString *downloadMd5 = MD5HashOfFile([downloadedZip path]);
       NSLog(@"Downloaded file md5 = %@ - expected is: %@", downloadMd5, md5);
       // TODO Add if to check if hashes match
-      // TODO before extracting, remove the current_bundle directory
       NSURL *extractPath = [[self workdir] URLByAppendingPathComponent:@"current_bundle" isDirectory:YES];
       [[NSFileManager defaultManager] removeItemAtURL:extractPath error:nil];
       NSError *zipError = nil;
@@ -168,7 +177,6 @@ NSString *MD5HashOfFile(NSString *filePath) {
         return;
       }
       
-      NSURL *currentZip = [[self workdir] URLByAppendingPathComponent:@"current.zip"];
       [[NSFileManager defaultManager] removeItemAtURL:currentZip error:nil];
       [[NSFileManager defaultManager] moveItemAtURL:downloadedZip
                                               toURL:currentZip
