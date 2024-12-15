@@ -1,7 +1,7 @@
 @interface BundlepushNative : NSObject
 
-+ (NSURL *)latestBundle;
++ (NSURL *)latestBundleURL;
 
-+ (void)performOTACheck:(NSString *)appId;
++ (void)checkForUpdates:(NSString *)appId;
 
 @end

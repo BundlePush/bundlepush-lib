@@ -113,14 +113,18 @@ void BPLog(NSString *format, ...) {
 
 + (BOOL)checkBundleFolderAvailable
 {
+  NSURL *workdir = [self workdir];
   BOOL isDirectory;
-  BOOL exists = [[NSFileManager defaultManager] fileExistsAtPath:[[self workdir] absoluteString]
+  BOOL exists = [[NSFileManager defaultManager] fileExistsAtPath:[workdir path]
                                                      isDirectory:&isDirectory];
   if (exists) {
+    if (!isDirectory) {
+      BPLog(@"Unexpected state - workdir is a file (%@)", workdir);
+    }
     return isDirectory;
   }
   NSError *error = nil;
-  BOOL result = [[NSFileManager defaultManager] createDirectoryAtURL:[self workdir]
+  BOOL result = [[NSFileManager defaultManager] createDirectoryAtURL:workdir
                                          withIntermediateDirectories:YES
                                                           attributes:nil
                                                                error:&error];
@@ -130,37 +134,23 @@ void BPLog(NSString *format, ...) {
   return result;
 }
 
-+ (void)performOTACheck:(NSString *)appId
++ (void)checkForUpdates:(NSString *)appId
 {
-  // Check if there's an extracted bundle available (bp_workdir/<version_code>/current_bundle) *
-  //   Use it as bundle (bp_workdir/<version_code>/current_bundle/main.jsbundle) *
-  //   Otherwise, use the default bundle from app *
-  // Async:
-  //   Perform API call to check for the latest bundle *
-  //   If available: *
-  //     Check if md5 matches bp_workdir/<version_code>/current.zip *
-  //     If matches, stop flow, it's not necessary to download again. Otherwise continue *
-  //     Download the new bundle to bp_workdir/<version_code>/downloaded.zip *
-  //     Check if md5 matches - if so *
-  //       Extract it to bp_workdir/<version_code>/current_bundle *
-  //       Rename it to bp_workdir/<version_code>/current.zip *
-  
   BOOL available = [self checkBundleFolderAvailable];
   if (!available) {
     return;
   }
   
-  [self requestBundleForAppId:@"app-id"
+  [self requestBundleForAppId:appId
         withCompletionHandler:^(NSString *md5, NSURL *bundleURL) {
     NSURL *currentZip = [[self workdir] URLByAppendingPathComponent:@"current.zip"];
     NSString *currentZipMd5 = MD5HashOfFile([currentZip path]);
     
     if ([currentZipMd5 isEqualToString:md5]) {
-      BPLog(@"Current bundle is up to date with the server (md5 = %@)", md5);
+      BPLog(@"Current installed bundle is up to date with the server (md5 = %@)", md5);
       return;
     }
     
-    // Download the new bundle to bp_workdir/<version_code>/downloaded.zip
     NSURL *downloadedZip = [[self workdir] URLByAppendingPathComponent:@"downloaded.zip"];
     BPLog(@"File will be downloaded to %@", downloadedZip);
     [self downloadFileFromURL:bundleURL
@@ -168,7 +158,7 @@ void BPLog(NSString *format, ...) {
             completionHandler:^() {
       NSString *downloadMd5 = MD5HashOfFile([downloadedZip path]);
       if (![downloadMd5 isEqualToString:md5]) {
-        BPLog(@"Aborting bundle install - downloadeded file md5 = %@ - expected is: %@", downloadMd5, md5);
+        BPLog(@"Aborting bundle install - downloaded file md5 = %@ - expected was: %@", downloadMd5, md5);
         return;
       }
       NSURL *extractPath = [[self workdir] URLByAppendingPathComponent:@"current_bundle" isDirectory:YES];
@@ -192,7 +182,7 @@ void BPLog(NSString *format, ...) {
   }];
 }
 
-+ (NSURL *)latestBundle
++ (NSURL *)latestBundleURL
 {
   NSURL *bundleUrl = [[self workdir] URLByAppendingPathComponent:@"current_bundle/main.jsbundle"];
   BOOL isDirectory;

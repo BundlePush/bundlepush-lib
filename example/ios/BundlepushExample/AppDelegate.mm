@@ -12,7 +12,7 @@
   // They will be passed down to the ViewController used by React Native.
   self.initialProps = @{};
   
-  [BundlepushNative performOTACheck:@"app-id"];
+  [BundlepushNative checkForUpdates:@"app-id"];
 
   return [super application:application didFinishLaunchingWithOptions:launchOptions];
 }
@@ -24,7 +24,7 @@
 
 - (NSURL *)bundleURL
 {
-  NSURL *latest = [BundlepushNative latestBundle];
+  NSURL *latest = [BundlepushNative latestBundleURL];
   NSLog(@"latest: %@", latest);
   if (latest != nil) {
     NSLog(@"using latest: %@", latest);
