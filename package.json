@@ -80,7 +80,7 @@
     "prettier": "^3.0.3",
     "react": "18.3.1",
     "react-native": "0.76.5",
-    "react-native-builder-bob": "^0.32.0",
+    "react-native-builder-bob": "^0.35.2",
     "release-it": "^17.10.0",
     "turbo": "^1.10.7",
     "typescript": "^5.2.2"
@@ -160,7 +160,6 @@
     "source": "src",
     "output": "lib",
     "targets": [
-      "codegen",
       [
         "commonjs",
         {
@@ -182,21 +181,8 @@
       ]
     ]
   },
-  "codegenConfig": {
-    "name": "RNBundlepushSpec",
-    "type": "modules",
-    "jsSrcsDir": "src",
-    "outputDir": {
-      "ios": "ios/generated",
-      "android": "android/generated"
-    },
-    "android": {
-      "javaPackageName": "com.bundlepush"
-    },
-    "includesGeneratedCode": true
-  },
   "create-react-native-library": {
-    "type": "turbo-module",
+    "type": "legacy-module",
     "languages": "kotlin-objc",
     "version": "0.45.5"
   }

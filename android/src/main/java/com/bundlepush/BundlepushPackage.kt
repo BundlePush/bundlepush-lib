@@ -1,34 +1,17 @@
 package com.bundlepush
 
-import com.facebook.react.BaseReactPackage
+import com.facebook.react.ReactPackage
 import com.facebook.react.bridge.NativeModule
 import com.facebook.react.bridge.ReactApplicationContext
-import com.facebook.react.module.model.ReactModuleInfo
-import com.facebook.react.module.model.ReactModuleInfoProvider
-import java.util.HashMap
+import com.facebook.react.uimanager.ViewManager
 
-class BundlepushPackage : BaseReactPackage() {
-  override fun getModule(name: String, reactContext: ReactApplicationContext): NativeModule? {
-    return if (name == BundlepushModule.NAME) {
-      BundlepushModule(reactContext)
-    } else {
-      null
-    }
+
+class BundlepushPackage : ReactPackage {
+  override fun createNativeModules(reactContext: ReactApplicationContext): List<NativeModule> {
+    return listOf(BundlepushModule(reactContext))
   }
 
-  override fun getReactModuleInfoProvider(): ReactModuleInfoProvider {
-    return ReactModuleInfoProvider {
-      val moduleInfos: MutableMap<String, ReactModuleInfo> = HashMap()
-      moduleInfos[BundlepushModule.NAME] = ReactModuleInfo(
-        BundlepushModule.NAME,
-        BundlepushModule.NAME,
-        false,  // canOverrideExistingModule
-        false,  // needsEagerInit
-        true,  // hasConstants
-        false,  // isCxxModule
-        true // isTurboModule
-      )
-      moduleInfos
-    }
+  override fun createViewManagers(reactContext: ReactApplicationContext): List<ViewManager<*, *>> {
+    return emptyList()
   }
 }

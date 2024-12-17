@@ -23,7 +23,7 @@
     "@react-native/babel-preset": "0.76.5",
     "@react-native/metro-config": "0.76.5",
     "@react-native/typescript-config": "0.76.5",
-    "react-native-builder-bob": "^0.32.0"
+    "react-native-builder-bob": "^0.35.2"
   },
   "engines": {
     "node": ">=18"
