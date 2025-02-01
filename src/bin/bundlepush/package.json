@@ -1,0 +1,14 @@
+{
+  "name": "bundlepush",
+  "version": "0.1.0",
+  "description": "Deploy React Native with OTA",
+  "main": "bundlepush.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Cernov Apps",
+  "license": "ISC",
+  "dependencies": {
+    "commander": "^13.1.0"
+  }
+}
