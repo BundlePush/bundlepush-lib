@@ -9,6 +9,8 @@
   "author": "Cernov Apps",
   "license": "ISC",
   "dependencies": {
-    "commander": "^13.1.0"
+    "@inquirer/prompts": "^7.2.4",
+    "commander": "^13.1.0",
+    "open": "^10.1.0"
   }
 }
