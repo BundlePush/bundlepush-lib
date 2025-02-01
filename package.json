@@ -23,6 +23,7 @@
     "android",
     "ios",
     "cpp",
+    "bin",
     "*.podspec",
     "react-native.config.js",
     "!ios/build",
@@ -43,7 +44,13 @@
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
     "clean": "del-cli android/build example/android/build example/android/app/build example/ios/build lib",
     "prepare": "bob build",
-    "release": "release-it"
+    "release": "release-it",
+    "build-bin": "javascript-obfuscator ./src/bin --output ./bin",
+    "prepublishOnly": "npm run build-bin"
+  },
+  "bin": {
+    "bundlepush": "./bin/bundlepush/bundlepush.js",
+    "bps": "./bin/bundlepush/bundlepush.js"
   },
   "keywords": [
     "react-native",
@@ -76,6 +83,7 @@
     "eslint": "^8.51.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-prettier": "^5.0.1",
+    "javascript-obfuscator": "^4.1.1",
     "jest": "^29.7.0",
     "prettier": "^3.0.3",
     "react": "18.3.1",

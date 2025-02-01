@@ -83,4 +83,4 @@ android/generated
 
 # Bundlepush
 example/generated_bundle
-
+/bin/
