@@ -1,7 +1,7 @@
-// const inquirer = require('inquirer');
-// const open = require('open');
+import inquirer from 'inquirer';
+import open from 'open';
 
-async function handleAuthLogin() {
+export async function handleAuthLogin() {
   const result = await checkCurrentAuthState();
 
   if (result === 'FINISH') {
@@ -58,24 +58,20 @@ async function startLoginFlow() {
     '2) If you already have one, just skip opening the dashboard and paste it.\n'
   );
 
-  // const { openPortal } = await inquirer.prompt([
-  //   {
-  //     type: 'confirm',
-  //     name: 'openPortal',
-  //     message: 'Open the portal in your browser to generate an API key?',
-  //     default: true,
-  //   },
-  // ]);
+  const { openPortal } = await inquirer.prompt([
+    {
+      type: 'confirm',
+      name: 'openPortal',
+      message: 'Open the portal in your browser to generate an API key?',
+      default: true,
+    },
+  ]);
 
-  // if (openPortal) {
-  //  console.log('Opening browser...');
-  //  await open('https://bundlepu.sh'); // TODO
-  // }
+  if (openPortal) {
+    console.log('Opening browser...');
+    await open('https://bundlepu.sh');
+  }
 }
-
-module.exports = {
-  handleAuthLogin,
-};
 
 // TODO implement and move to other files
 function isKeyValid(key) {

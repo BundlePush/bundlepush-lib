@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 
-const { Command } = require('commander');
-const { handleAuthLogin } = require('./auth/login');
+import { Command } from 'commander';
+import { handleAuthLogin } from './auth/login/index.js';
+
 const program = new Command();
 
 program
