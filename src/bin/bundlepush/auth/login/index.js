@@ -1,10 +1,8 @@
 import inquirer from 'inquirer';
 import open from 'open';
 import { API_KEYS_URL, BUNDLEPUSH_API_KEY } from '../../config/variables.js';
-import {
-  loadKeyFromHome,
-  saveKeyToHome,
-} from '../../localstorage/keysInHome.js';
+import { loadKeyFromHome, saveKeyToHome } from '../../utils/keysInHome.js';
+import { fetchOrganizationFromKey } from '../../utils/fetchOrganizationFromKey.js';
 
 export async function handleAuthLogin() {
   const result = await checkCurrentAuthState();
@@ -24,7 +22,6 @@ export async function handleAuthLogin() {
 
 async function checkCurrentAuthState() {
   // 1. Check if an ENV variable key exists
-  // TODO move env to other shared file
   if (BUNDLEPUSH_API_KEY) {
     const keyData = await fetchOrganizationFromKey(BUNDLEPUSH_API_KEY);
     if (keyData) {
@@ -99,14 +96,4 @@ async function startLoginFlow() {
 
   console.log(`✓ You are authenticated in ${keyData.organizationName}.`);
   await saveKeyToHome(apiKey);
-}
-
-// TODO implement and move to other files
-function fetchOrganizationFromKey(key) {
-  if (key.match(/valid/)) {
-    return {
-      organizationName: 'Cernov Apps',
-    };
-  }
-  return null;
 }
