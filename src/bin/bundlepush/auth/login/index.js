@@ -13,6 +13,10 @@ export async function handleAuthLogin() {
     return;
   }
 
+  if (result === 'FINISH_WITH_ERROR') {
+    process.exit(1);
+  }
+
   if (result === 'PROCEED') {
     await startLoginFlow();
   }
@@ -24,15 +28,11 @@ async function checkCurrentAuthState() {
   if (BUNDLEPUSH_API_KEY) {
     const keyData = await fetchOrganizationFromKey(BUNDLEPUSH_API_KEY);
     if (keyData) {
-      console.log(
-        `✓ You are already authenticated in ${keyData.organizationName}.`
-      );
+      console.log(`✓ You are authenticated in ${keyData.organizationName}.`);
       return 'FINISH';
     } else {
-      console.log(
-        'Could not find authenticated organization. Proceeding with the login flow...'
-      );
-      return 'PROCEED';
+      console.log('The provided key in environment variable is invalid.');
+      return 'FINISH_WITH_ERROR';
     }
   } else {
     // 2. If no ENV key, check if we have a saved key in the home directory
