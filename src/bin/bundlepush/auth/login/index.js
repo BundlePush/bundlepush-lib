@@ -1,5 +1,6 @@
 import inquirer from 'inquirer';
 import open from 'open';
+import { API_KEYS_URL, BUNDLEPUSH_API_KEY } from '../../config/variables.js';
 
 export async function handleAuthLogin() {
   const result = await checkCurrentAuthState();
@@ -11,33 +12,31 @@ export async function handleAuthLogin() {
   if (result === 'PROCEED') {
     await startLoginFlow();
   }
-
-  throw new Error('Invalid auth state');
 }
 
 async function checkCurrentAuthState() {
   // 1. Check if an ENV variable key exists
   // TODO move env to other shared file
-  const envKey = process.env.BUNDLEPUSH_API_KEY;
-  if (envKey) {
-    const valid = await isKeyValid(envKey);
-    if (valid) {
+  if (BUNDLEPUSH_API_KEY) {
+    const keyData = await fetchOrganizationFromKey(BUNDLEPUSH_API_KEY);
+    if (keyData) {
       console.log(
-        '✓ You are already authenticated with a valid BUNDLEPUSH_API_KEY.'
+        `✓ You are already authenticated in ${keyData.organizationName}.`
       );
       return 'FINISH';
     } else {
       console.log(
-        'BP_API_KEY is set but invalid. Proceeding with the login flow...'
+        'Could not find authenticated organization. Proceeding with the login flow...'
       );
       return 'PROCEED';
     }
   } else {
     // 2. If no ENV key, check if we have a saved key in the home directory
     const savedKey = loadKeyFromHome();
-    if (savedKey && (await isKeyValid(savedKey))) {
+    const keyData = savedKey ? await fetchOrganizationFromKey(savedKey) : null;
+    if (keyData) {
       console.log(
-        '✓ You are already authenticated (key found in your home directory).'
+        `✓ You are already authenticated in ${keyData.organizationName}.`
       );
       return 'FINISH';
     } else {
@@ -69,17 +68,48 @@ async function startLoginFlow() {
 
   if (openPortal) {
     console.log('Opening browser...');
-    await open('https://bundlepu.sh');
+    await open(API_KEYS_URL);
   }
+
+  let keyData = null;
+  let apiKey = null;
+
+  do {
+    const promptResult = await inquirer.prompt([
+      {
+        type: 'input',
+        name: 'apiKey',
+        message: 'Paste your API key here:',
+      },
+    ]);
+
+    apiKey = promptResult.apiKey;
+    keyData = await fetchOrganizationFromKey(apiKey);
+
+    if (!keyData) {
+      console.log('Invalid API key. Please try again.');
+    }
+  } while (!keyData);
+
+  console.log(`✓ You are authenticated in ${keyData.organizationName}.`);
+  saveKeyToHome(apiKey);
 }
 
 // TODO implement and move to other files
-function isKeyValid(key) {
-  // TODO
-  return key === 'VALID';
+function fetchOrganizationFromKey(key) {
+  if (key.match(/valid/)) {
+    return {
+      organizationName: 'Cernov Apps',
+    };
+  }
+  return null;
 }
 
 function loadKeyFromHome() {
   // TODO
   return 'VALID';
+}
+
+function saveKeyToHome(key) {
+  // TODO
 }
