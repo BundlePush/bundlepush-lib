@@ -1,6 +1,10 @@
 import inquirer from 'inquirer';
 import open from 'open';
 import { API_KEYS_URL, BUNDLEPUSH_API_KEY } from '../../config/variables.js';
+import {
+  loadKeyFromHome,
+  saveKeyToHome,
+} from '../../localstorage/keysInHome.js';
 
 export async function handleAuthLogin() {
   const result = await checkCurrentAuthState();
@@ -32,7 +36,7 @@ async function checkCurrentAuthState() {
     }
   } else {
     // 2. If no ENV key, check if we have a saved key in the home directory
-    const savedKey = loadKeyFromHome();
+    const savedKey = await loadKeyFromHome();
     const keyData = savedKey ? await fetchOrganizationFromKey(savedKey) : null;
     if (keyData) {
       console.log(
@@ -40,16 +44,18 @@ async function checkCurrentAuthState() {
       );
       return 'FINISH';
     } else {
-      console.log(
-        'Your stored key is invalid. Proceeding with the login flow...'
-      );
+      if (savedKey) {
+        console.log(
+          'Your stored key is invalid. Proceeding with the login flow...'
+        );
+      }
       return 'PROCEED';
     }
   }
 }
 
 async function startLoginFlow() {
-  console.log('\nNo valid API key found.');
+  console.log('\nWelcome to BundlePush!\n');
   console.log(
     '1) If you do not have an API key, we can open the BundlePush dashboard to generate one.'
   );
@@ -92,7 +98,7 @@ async function startLoginFlow() {
   } while (!keyData);
 
   console.log(`✓ You are authenticated in ${keyData.organizationName}.`);
-  saveKeyToHome(apiKey);
+  await saveKeyToHome(apiKey);
 }
 
 // TODO implement and move to other files
@@ -103,13 +109,4 @@ function fetchOrganizationFromKey(key) {
     };
   }
   return null;
-}
-
-function loadKeyFromHome() {
-  // TODO
-  return 'VALID';
-}
-
-function saveKeyToHome(key) {
-  // TODO
 }
