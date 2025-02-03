@@ -42,9 +42,7 @@ async function checkCurrentAuthState() {
       return 'FINISH';
     } else {
       if (savedKey) {
-        console.log(
-          'Your stored key is invalid. Proceeding with the login flow...'
-        );
+        console.log('Proceeding with the login flow...');
       }
       return 'PROCEED';
     }

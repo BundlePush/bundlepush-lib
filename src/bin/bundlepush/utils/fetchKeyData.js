@@ -8,7 +8,15 @@ export async function fetchKeyData(key) {
     }
     return null;
   } catch (error) {
-    // console.error(error);
-    return null;
+    if (error?.status === 401) {
+      console.log('Invalid or expired key.');
+      return null;
+    } else if (!error?.status) {
+      console.log('Could not connect with BundlePush server.');
+      process.exit(1);
+    } else {
+      console.log('An error occurred while fetching key data.');
+      process.exit(1);
+    }
   }
 }
