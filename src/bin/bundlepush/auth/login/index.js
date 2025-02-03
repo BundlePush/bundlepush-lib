@@ -2,7 +2,7 @@ import inquirer from 'inquirer';
 import open from 'open';
 import { API_KEYS_URL, BUNDLEPUSH_API_KEY } from '../../config/variables.js';
 import { loadKeyFromHome, saveKeyToHome } from '../../utils/keysInHome.js';
-import { fetchOrganizationFromKey } from '../../utils/fetchOrganizationFromKey.js';
+import { fetchKeyData } from '../../utils/fetchKeyData.js';
 
 export async function handleAuthLogin() {
   const result = await checkCurrentAuthState();
@@ -23,9 +23,9 @@ export async function handleAuthLogin() {
 async function checkCurrentAuthState() {
   // 1. Check if an ENV variable key exists
   if (BUNDLEPUSH_API_KEY) {
-    const keyData = await fetchOrganizationFromKey(BUNDLEPUSH_API_KEY);
+    const keyData = await fetchKeyData(BUNDLEPUSH_API_KEY);
     if (keyData) {
-      console.log(`✓ You are authenticated in ${keyData.organizationName}.`);
+      console.log(`✓ You are authenticated in ${keyData.organization.name}.`);
       return 'FINISH';
     } else {
       console.log('The provided key in environment variable is invalid.');
@@ -34,10 +34,10 @@ async function checkCurrentAuthState() {
   } else {
     // 2. If no ENV key, check if we have a saved key in the home directory
     const savedKey = await loadKeyFromHome();
-    const keyData = savedKey ? await fetchOrganizationFromKey(savedKey) : null;
+    const keyData = savedKey ? await fetchKeyData(savedKey) : null;
     if (keyData) {
       console.log(
-        `✓ You are already authenticated in ${keyData.organizationName}.`
+        `✓ You are already authenticated in ${keyData.organization.name}.`
       );
       return 'FINISH';
     } else {
@@ -87,13 +87,13 @@ async function startLoginFlow() {
     ]);
 
     apiKey = promptResult.apiKey;
-    keyData = await fetchOrganizationFromKey(apiKey);
+    keyData = await fetchKeyData(apiKey);
 
     if (!keyData) {
       console.log('Invalid API key. Please try again.');
     }
   } while (!keyData);
 
-  console.log(`✓ You are authenticated in ${keyData.organizationName}.`);
+  console.log(`✓ You are authenticated in ${keyData.organization.name}.`);
   await saveKeyToHome(apiKey);
 }
