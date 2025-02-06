@@ -4,7 +4,7 @@ import { fetchKeyData } from '../utils/fetchKeyData.js';
 
 export async function getCurrentAuthState({
   notAuthenticatedMessage = 'You are not authenticated.\nRun `bundlepush login`.',
-}) {
+} = {}) {
   // 1. Check if an ENV variable key exists
   if (BUNDLEPUSH_API_KEY) {
     const keyData = await fetchKeyData(BUNDLEPUSH_API_KEY);
@@ -13,6 +13,7 @@ export async function getCurrentAuthState({
       return {
         status: 'AUTHENTICATED',
         keyData,
+        key: BUNDLEPUSH_API_KEY,
       };
     } else {
       console.log('The provided key in environment variable is invalid.');
@@ -23,15 +24,16 @@ export async function getCurrentAuthState({
     const savedKey = await loadKeyFromHome();
     const keyData = savedKey ? await fetchKeyData(savedKey) : null;
     if (keyData) {
-      console.log(
-        `✓ You are already authenticated in ${keyData.organization.name}.`
-      );
+      console.log(`✓ You are authenticated in ${keyData.organization.name}.`);
       return {
         status: 'AUTHENTICATED',
         keyData,
+        key: savedKey,
       };
     } else {
       if (savedKey) {
+        console.log('Your last authenticated is invalid or expired.');
+      } else {
         console.log(notAuthenticatedMessage);
       }
       return {
