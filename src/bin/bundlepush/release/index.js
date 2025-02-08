@@ -1,6 +1,7 @@
 import { uploadFile } from '../service/aws.js';
-import { requestUploadUrl } from '../service/bundle-upload.js';
+import { createBundle, requestUploadUrl } from '../service/bundle.js';
 import { getCurrentAuthState } from '../utils/getAuthState.js';
+import md5File from 'md5-file';
 
 export async function handleRelease(args) {
   const { app } = args;
@@ -31,5 +32,14 @@ export async function handleRelease(args) {
     localFile: 'package-lock.json', // TODO use correct file
   });
 
-  // TODO Step 4: confirm the upload with app data
+  const md5 = await md5File('package-lock.json');
+
+  // Step 4: create the bundle
+  await createBundle({
+    key: result.key,
+    appId: app,
+    uploadFileId: uploadUrlData.uploadFileId,
+    md5,
+    // TODO add more options
+  });
 }
