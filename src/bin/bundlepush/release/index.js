@@ -1,5 +1,5 @@
 import { uploadFile } from '../service/aws.js';
-import { requestUploadUrl } from '../service/keys-request.js';
+import { requestUploadUrl } from '../service/bundle-upload.js';
 import { getCurrentAuthState } from '../utils/getAuthState.js';
 
 export async function handleRelease(args) {
@@ -20,7 +20,6 @@ export async function handleRelease(args) {
   // TODO Step 1: build the app
 
   // Step 2: request upload key
-  console.log('result.key', result.key);
   const uploadUrlData = await requestUploadUrl({
     key: result.key,
     appId: app,

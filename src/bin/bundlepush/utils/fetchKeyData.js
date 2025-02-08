@@ -1,4 +1,4 @@
-import { keyCheckRequest } from '../service/keys-request.js';
+import { keyCheckRequest } from '../service/keys-management.js';
 
 export async function fetchKeyData(key) {
   try {
