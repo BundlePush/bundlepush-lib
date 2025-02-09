@@ -7,6 +7,7 @@ import fs from 'fs';
 import path from 'path';
 import { execa } from 'execa';
 import zipper from 'zip-local';
+import { getAppData } from '../service/app.js';
 
 export async function handleRelease(args) {
   const { app } = args;
@@ -21,8 +22,19 @@ export async function handleRelease(args) {
     process.exit(1);
   }
 
-  // TODO check if app is from organization
-  // TODO retrieve app's platform
+  const appData = await getAppData({ key: result.key, appId: app });
+  let platform;
+  switch (appData.platform) {
+    case 'ANDROID':
+      platform = 'android';
+      break;
+    case 'IOS':
+      platform = 'ios';
+      break;
+    default:
+      console.error(`Unsupported platform: ${appData.platform}`);
+      process.exit(1);
+  }
 
   // Step 1.1: get a temporary directory
   const bundleDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'bp-'));
@@ -32,7 +44,7 @@ export async function handleRelease(args) {
     'react-native',
     'bundle',
     '--platform',
-    'ios',
+    platform,
     '--dev',
     'false',
     '--entry-file',
