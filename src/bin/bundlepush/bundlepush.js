@@ -15,7 +15,7 @@ const loginCommand = new Command('login')
   .description('Login using an API key')
   .action(handleAuthLogin);
 
-const appsCommand = new Command('apps').description('Organization apps');
+const appsCommand = new Command('app').description('Organization apps');
 
 const listAppsCommand = new Command('list')
   .description('List organization apps')
