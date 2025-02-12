@@ -10,7 +10,6 @@ npm install bundlepush
 
 ## Usage
 
-
 ```js
 import { multiply } from 'bundlepush';
 
@@ -19,14 +18,13 @@ import { multiply } from 'bundlepush';
 const result = await multiply(3, 7);
 ```
 
-
 ## Contributing
 
 See the [contributing guide](CONTRIBUTING.md) to learn how to contribute to the repository and the development workflow.
 
 ## License
 
-MIT
+[BSL](LICENSE-BSL)
 
 ---
 
