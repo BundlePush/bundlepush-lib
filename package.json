@@ -1,11 +1,12 @@
 {
   "name": "bundlepush",
-  "version": "0.1.0",
+  "version": "0.1.3",
   "description": "Straightforward OTA updates",
   "source": "./src/index.tsx",
   "main": "./lib/commonjs/index.js",
   "module": "./lib/module/index.js",
   "files": [
+    "cli",
     "lib/src",
     "lib/lib",
     "lib/android",
@@ -25,21 +26,21 @@
     "!lib/**/__mocks__",
     "!lib/**/.*"
   ],
-  "dependencies": {
-    "bp-cli": "file:cli",
-    "bp-lib": "file:lib"
-  },
   "workspaces": [
     "cli",
     "lib"
   ],
+  "dependencies": {
+    "bundlepush-cli": "file:cli",
+    "bundlepush-lib": "file:lib"
+  },
   "scripts": {
     "build": "npm run build -w lib && npm run build -w cli",
     "prepare": "npm run build"
   },
   "bin": {
-    "bundlepush": "./cli/src/bin/bundlepush/bundlepush.js",
-    "bps": "./cli/src/bin/bundlepush/bundlepush.js"
+    "bundlepush": "./cli/bundlepush.js",
+    "bps": "./cli/bundlepush.js"
   },
   "keywords": [
     "react-native",

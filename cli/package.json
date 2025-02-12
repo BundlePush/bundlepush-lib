@@ -4,6 +4,7 @@
   "description": "Deploy React Native with OTA",
   "main": "bundlepush.js",
   "type": "module",
+  "private": true,
   "scripts": {
     "build": "true",
     "test": "echo \"Error: no test specified\" && exit 1"
