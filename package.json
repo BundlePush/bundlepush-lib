@@ -86,5 +86,8 @@
         "preset": "angular"
       }
     }
+  },
+  "devDependencies": {
+    "lerna": "^8.1.9"
   }
 }
