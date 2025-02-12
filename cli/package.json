@@ -1,6 +1,6 @@
 {
   "name": "bundlepush-cli",
-  "version": "0.1.0",
+  "version": "0.1.4",
   "description": "Deploy React Native with OTA",
   "main": "bundlepush.js",
   "type": "module",
