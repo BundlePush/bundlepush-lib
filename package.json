@@ -1,6 +1,6 @@
 {
   "name": "bundlepush",
-  "version": "0.1.0",
+  "version": "0.1.9",
   "description": "Straightforward OTA updates",
   "source": "./src/index.tsx",
   "main": "./lib/commonjs/index.js",
@@ -44,13 +44,11 @@
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
     "clean": "del-cli android/build example/android/build example/android/app/build example/ios/build lib",
     "prepare": "bob build",
-    "release": "release-it",
-    "build-bin": "javascript-obfuscator ./src/bin --output ./bin",
-    "prepublishOnly": "npm run build-bin"
+    "release": "release-it"
   },
   "bin": {
-    "bundlepush": "./bin/bundlepush/bundlepush.js",
-    "bps": "./bin/bundlepush/bundlepush.js"
+    "bundlepush": "./src/bin/bundlepush/bundlepush.js",
+    "bps": "./src/bin/bundlepush/bundlepush.js"
   },
   "keywords": [
     "react-native",
@@ -69,6 +67,15 @@
   "homepage": "https://github.com/CernovApps/bundlepush-lib#readme",
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"
+  },
+  "dependencies": {
+    "axios": "^1.7.9",
+    "commander": "^13.1.0",
+    "execa": "^9.5.2",
+    "inquirer": "^12.4.2",
+    "md5-file": "^5.0.0",
+    "open": "^10.1.0",
+    "zip-local": "^0.3.5"
   },
   "devDependencies": {
     "@commitlint/config-conventional": "^17.0.2",
@@ -189,6 +196,7 @@
       ]
     ]
   },
+  "type": "module",
   "create-react-native-library": {
     "type": "legacy-module",
     "languages": "kotlin-objc",
