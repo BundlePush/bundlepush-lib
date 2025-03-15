@@ -12,7 +12,7 @@
   // They will be passed down to the ViewController used by React Native.
   self.initialProps = @{};
   
-  [BundlepushNative checkForUpdates:@"app-id"];
+  [BundlepushNative checkForUpdates:@"lib-example-app-ios"];
 
   return [super application:application didFinishLaunchingWithOptions:launchOptions];
 }

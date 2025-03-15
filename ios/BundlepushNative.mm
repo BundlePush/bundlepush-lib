@@ -39,6 +39,10 @@ void BPLog(NSString *format, ...) {
   return bundleVersion;
 }
 
++ (NSString *)getAppVersion
+{
+  return [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleShortVersionString"];
+}
 
 + (NSURL *)workdir
 {
@@ -49,34 +53,45 @@ void BPLog(NSString *format, ...) {
 }
 
 + (void)requestBundleForAppId:(NSString *)appId
+                  ignoreIfMd5:(NSString *)currentMd5
         withCompletionHandler:(void (^)(NSString *md5, NSURL *bundleURL))completionHandler
 {
-  NSString *urlString = [NSString stringWithFormat:@"https://y83x5afgd2.api.quickmocker.com/bundle?platform=ios&id=%@&version_code=%@", appId, [self getBuildNumber]];
-  NSURL *url = [NSURL URLWithString:urlString];
+  NSString *metadataUrlString = [NSString
+                         stringWithFormat:@"https://api.bundlepu.sh/public-bundle?platform=IOS&appId=%@&versionCode=%@&versionName=%@",
+                         appId,
+                         [self getBuildNumber],
+                         [self getAppVersion]];
+  NSURL *metadataUrl = [NSURL URLWithString:metadataUrlString];
   NSURLSession *session = [NSURLSession sharedSession];
   
-  NSURLSessionDataTask *dataTask = [session dataTaskWithURL:url
-                                          completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
-    if (error) {
-      BPLog(@"Error: %@", error.localizedDescription);
+  NSURLSessionDataTask *dataTask = [session dataTaskWithURL:metadataUrl
+                                          completionHandler:^(NSData *metadata, NSURLResponse *metadataResponse, NSError *metadataError) {
+    if (metadataError) {
+      BPLog(@"Error: %@", metadataError.localizedDescription);
+      return;
+    }
+    if (!metadata) {
+      BPLog(@"Unexpected state - no error and no metadata returned");
+    }
+
+    NSError *metadataJsonError;
+    NSDictionary *json = [NSJSONSerialization JSONObjectWithData:metadata options:0 error:&metadataJsonError];
+    if (metadataJsonError) {
+      BPLog(@"JSON Parsing Error: %@", metadataJsonError.localizedDescription);
+      return;
+    }
+    NSString *md5 = [json objectForKey:@"md5"];
+    NSString *bundleId = [json objectForKey:@"bundleId"];
+    if (!md5 || !bundleId) {
+      BPLog(@"No bundle updates available");
+    }
+    if ([currentMd5 isEqualToString:md5]) {
+      BPLog(@"Current installed bundle is up to date with the server (md5 = %@)", md5);
       return;
     }
 
-    if (data) {
-      NSError *jsonError;
-      NSDictionary *json = [NSJSONSerialization JSONObjectWithData:data options:0 error:&jsonError];
-      if (jsonError) {
-        BPLog(@"JSON Parsing Error: %@", jsonError.localizedDescription);
-      } else {
-        NSString *md5 = [json objectForKey:@"md5"];
-        NSString *bundle = [json objectForKey:@"url"];
-        if (md5 && bundle) {
-          completionHandler(md5, [NSURL URLWithString:bundle]);
-        } else {
-          BPLog(@"No bundle updates available");
-        }
-      }
-    }
+    // TODO get download url
+    BPLog(@"md5: %@; bundleId: %@", md5, bundleId);
   }];
   
   [dataTask resume];
@@ -121,6 +136,7 @@ void BPLog(NSString *format, ...) {
     if (!isDirectory) {
       BPLog(@"Unexpected state - workdir is a file (%@)", workdir);
     }
+    // TODO check write access available
     return isDirectory;
   }
   NSError *error = nil;
@@ -140,16 +156,12 @@ void BPLog(NSString *format, ...) {
   if (!available) {
     return;
   }
-  
+  NSURL *currentZip = [[self workdir] URLByAppendingPathComponent:@"current.zip"];
+  NSString *currentZipMd5 = MD5HashOfFile([currentZip path]);
+
   [self requestBundleForAppId:appId
+        ignoreIfMd5:currentZipMd5
         withCompletionHandler:^(NSString *md5, NSURL *bundleURL) {
-    NSURL *currentZip = [[self workdir] URLByAppendingPathComponent:@"current.zip"];
-    NSString *currentZipMd5 = MD5HashOfFile([currentZip path]);
-    
-    if ([currentZipMd5 isEqualToString:md5]) {
-      BPLog(@"Current installed bundle is up to date with the server (md5 = %@)", md5);
-      return;
-    }
     
     NSURL *downloadedZip = [[self workdir] URLByAppendingPathComponent:@"downloaded.zip"];
     BPLog(@"File will be downloaded to %@", downloadedZip);
@@ -162,7 +174,9 @@ void BPLog(NSString *format, ...) {
         return;
       }
       NSURL *extractPath = [[self workdir] URLByAppendingPathComponent:@"current_bundle" isDirectory:YES];
-      [[NSFileManager defaultManager] removeItemAtURL:extractPath error:nil];
+      
+      [[NSFileManager defaultManager] removeItemAtURL:extractPath
+                                                error:nil]; // TODO handle error
       NSError *zipError = nil;
       BOOL successUnzip = [SSZipArchive unzipFileAtPath:[downloadedZip path]
                                           toDestination:[extractPath path]

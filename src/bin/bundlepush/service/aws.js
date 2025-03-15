@@ -1,10 +1,10 @@
 import axios from 'axios';
 import fs from 'fs';
 
-export const uploadFile = ({ presignedUrl, localFile }) => {
+export const uploadFile = async ({ presignedUrl, localFile }) => {
   const { size } = fs.statSync(localFile);
   const fileStream = fs.createReadStream(localFile);
-  const response = axios.put(presignedUrl, fileStream, {
+  const response = await axios.put(presignedUrl, fileStream, {
     headers: {
       'Content-Type': 'application/zip',
       'Content-Length': size,
