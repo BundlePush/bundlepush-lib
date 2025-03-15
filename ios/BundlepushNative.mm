@@ -64,6 +64,7 @@ void BPLog(NSString *format, ...) {
   NSURL *metadataUrl = [NSURL URLWithString:metadataUrlString];
   NSURLSession *session = [NSURLSession sharedSession];
   
+  // TODO extract fetch function
   NSURLSessionDataTask *dataTask = [session dataTaskWithURL:metadataUrl
                                           completionHandler:^(NSData *metadata, NSURLResponse *metadataResponse, NSError *metadataError) {
     if (metadataError) {
@@ -72,26 +73,57 @@ void BPLog(NSString *format, ...) {
     }
     if (!metadata) {
       BPLog(@"Unexpected state - no error and no metadata returned");
+      return;
     }
 
     NSError *metadataJsonError;
-    NSDictionary *json = [NSJSONSerialization JSONObjectWithData:metadata options:0 error:&metadataJsonError];
+    NSDictionary *metadataJson = [NSJSONSerialization JSONObjectWithData:metadata options:0 error:&metadataJsonError];
     if (metadataJsonError) {
       BPLog(@"JSON Parsing Error: %@", metadataJsonError.localizedDescription);
       return;
     }
-    NSString *md5 = [json objectForKey:@"md5"];
-    NSString *bundleId = [json objectForKey:@"bundleId"];
+    NSString *md5 = [metadataJson objectForKey:@"md5"];
+    NSString *bundleId = [metadataJson objectForKey:@"bundleId"];
     if (!md5 || !bundleId) {
       BPLog(@"No bundle updates available");
+      return;
     }
     if ([currentMd5 isEqualToString:md5]) {
       BPLog(@"Current installed bundle is up to date with the server (md5 = %@)", md5);
       return;
     }
+    
+    // Everything is ready to download the new bundle
+    NSString *downloadLinkUrlString = [NSString stringWithFormat:@"https://api.bundlepu.sh/public-bundle/download-url?appId=%@&bundleId=%@&md5=%@",
+                           appId, bundleId, md5];
+    NSURL *downloadLinkUrl = [NSURL URLWithString:downloadLinkUrlString];
+    
+    NSURLSessionDataTask *downloadLinkTask = [session dataTaskWithURL:downloadLinkUrl
+                                                    completionHandler:^(NSData *downloadLink, NSURLResponse *downloadLinkResponse, NSError *downloadLinkError) {
+      if (downloadLinkError) {
+        BPLog(@"Error: %@", downloadLinkError.localizedDescription);
+        return;
+      }
+      if (!downloadLink) {
+        BPLog(@"Unexpected state - no error and no download link returned");
+        return;
+      }
 
-    // TODO get download url
-    BPLog(@"md5: %@; bundleId: %@", md5, bundleId);
+      NSError *downloadLinkJsonError;
+      NSDictionary *downloadLinkJson = [NSJSONSerialization JSONObjectWithData:downloadLink options:0 error:&downloadLinkJsonError];
+      if (downloadLinkJsonError) {
+        BPLog(@"JSON Parsing Error: %@", downloadLinkJsonError.localizedDescription);
+        return;
+      }
+      NSString *signedUrl = [downloadLinkJson objectForKey:@"signedUrl"];
+      if (!signedUrl) {
+        BPLog(@"Trying to download, but could not retrieve the signed url of %@", bundleId);
+        return;
+      }
+
+      completionHandler(md5, [NSURL URLWithString:signedUrl]);
+    }];
+    [downloadLinkTask resume];
   }];
   
   [dataTask resume];
@@ -129,6 +161,7 @@ void BPLog(NSString *format, ...) {
 + (BOOL)checkBundleFolderAvailable
 {
   NSURL *workdir = [self workdir];
+  BPLog([workdir absoluteString]);
   BOOL isDirectory;
   BOOL exists = [[NSFileManager defaultManager] fileExistsAtPath:[workdir path]
                                                      isDirectory:&isDirectory];
