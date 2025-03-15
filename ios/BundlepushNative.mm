@@ -208,8 +208,13 @@ void BPLog(NSString *format, ...) {
       }
       NSURL *extractPath = [[self workdir] URLByAppendingPathComponent:@"current_bundle" isDirectory:YES];
       
-      [[NSFileManager defaultManager] removeItemAtURL:extractPath
-                                                error:nil]; // TODO handle error
+      NSError *removeError = nil;
+      BOOL successRemove = [[NSFileManager defaultManager] removeItemAtURL:extractPath
+                                                                     error:&removeError];
+      if (!successRemove) {
+        BPLog(@"Error removing previous bundle - %@", removeError);
+        return;
+      }
       NSError *zipError = nil;
       BOOL successUnzip = [SSZipArchive unzipFileAtPath:[downloadedZip path]
                                           toDestination:[extractPath path]
