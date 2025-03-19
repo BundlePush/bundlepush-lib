@@ -54,13 +54,15 @@ void BPLog(NSString *format, ...) {
 
 + (void)requestBundleForAppId:(NSString *)appId
                   ignoreIfMd5:(NSString *)currentMd5
+                      devMode:(BOOL)devMode
         withCompletionHandler:(void (^)(NSString *md5, NSURL *bundleURL))completionHandler
 {
   NSString *metadataUrlString = [NSString
-                         stringWithFormat:@"https://api.bundlepu.sh/public-bundle?platform=IOS&appId=%@&versionCode=%@&versionName=%@",
+                         stringWithFormat:@"https://api.bundlepu.sh/public-bundle?platform=IOS&appId=%@&versionCode=%@&versionName=%@&devMode=%@",
                          appId,
                          [self getBuildNumber],
-                         [self getAppVersion]];
+                         [self getAppVersion],
+                         devMode ? @"true" : @"false"];
   NSURL *metadataUrl = [NSURL URLWithString:metadataUrlString];
   NSURLSession *session = [NSURLSession sharedSession];
   
@@ -94,8 +96,8 @@ void BPLog(NSString *format, ...) {
     }
     
     // Everything is ready to download the new bundle
-    NSString *downloadLinkUrlString = [NSString stringWithFormat:@"https://api.bundlepu.sh/public-bundle/download-url?appId=%@&bundleId=%@&md5=%@",
-                           appId, bundleId, md5];
+    NSString *downloadLinkUrlString = [NSString stringWithFormat:@"https://api.bundlepu.sh/public-bundle/download-url?appId=%@&bundleId=%@&md5=%@&devMode=%@",
+                           appId, bundleId, md5, devMode ? @"true" : @"false"];
     NSURL *downloadLinkUrl = [NSURL URLWithString:downloadLinkUrlString];
     
     NSURLSessionDataTask *downloadLinkTask = [session dataTaskWithURL:downloadLinkUrl
@@ -185,6 +187,18 @@ void BPLog(NSString *format, ...) {
 
 + (void)checkForUpdates:(NSString *)appId
 {
+  
+#if DEBUG
+  BPLog(@"Using dev mode");
+  [self checkForUpdates:appId withDevMode:YES];
+#else
+  [self checkForUpdates:appId withDevMode:NO];
+#endif
+}
+
++ (void)checkForUpdates:(NSString *)appId
+            withDevMode:(BOOL)devMode
+{
   BOOL available = [self checkBundleFolderAvailable];
   if (!available) {
     return;
@@ -193,7 +207,8 @@ void BPLog(NSString *format, ...) {
   NSString *currentZipMd5 = MD5HashOfFile([currentZip path]);
 
   [self requestBundleForAppId:appId
-        ignoreIfMd5:currentZipMd5
+                  ignoreIfMd5:currentZipMd5
+                      devMode:devMode
         withCompletionHandler:^(NSString *md5, NSURL *bundleURL) {
     
     NSURL *downloadedZip = [[self workdir] URLByAppendingPathComponent:@"downloaded.zip"];
@@ -209,12 +224,8 @@ void BPLog(NSString *format, ...) {
       NSURL *extractPath = [[self workdir] URLByAppendingPathComponent:@"current_bundle" isDirectory:YES];
       
       NSError *removeError = nil;
-      BOOL successRemove = [[NSFileManager defaultManager] removeItemAtURL:extractPath
-                                                                     error:&removeError];
-      if (!successRemove) {
-        BPLog(@"Error removing previous bundle - %@", removeError);
-        return;
-      }
+      [[NSFileManager defaultManager] removeItemAtURL:extractPath
+                                                error:&removeError];
       NSError *zipError = nil;
       BOOL successUnzip = [SSZipArchive unzipFileAtPath:[downloadedZip path]
                                           toDestination:[extractPath path]
