@@ -1,6 +1,6 @@
 {
   "name": "bundlepush",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "description": "Straightforward OTA updates",
   "source": "./src/index.tsx",
   "main": "./lib/commonjs/index.js",
@@ -57,14 +57,14 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/CernovApps/bundlepush-lib.git"
+    "url": "git+https://github.com/BundlePush/bundlepush-lib.git"
   },
   "author": "Iuri Cernov <iuri@cernovapps.com> (https://cernovapps.com)",
-  "license": "MIT",
+  "license": "BSL",
   "bugs": {
-    "url": "https://github.com/CernovApps/bundlepush-lib/issues"
+    "url": "https://github.com/BundlePush/bundlepush-lib/issues"
   },
-  "homepage": "https://github.com/CernovApps/bundlepush-lib#readme",
+  "homepage": "https://github.com/BundlePush/bundlepush-lib#readme",
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"
   },
