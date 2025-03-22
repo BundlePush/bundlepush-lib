@@ -47,6 +47,14 @@ Visit [BundlePush Dashboard](https://dash.bundlepu.sh), create an account, and s
    yarn add bundlepush
    ```
 
+   After installing the library, install the iOS dependencies:
+
+   ```bash
+   cd ios
+   pod install
+   cd ..
+   ```
+
 2. **Add the native code** to iOS:
 
 - If you're using Objective-C++ (`AppDelegate.mm`), follow the documentation in [Objective-C integration guide](docs/objective-c.md)
