@@ -15,6 +15,8 @@ In the bridging header file, import the BundlePush native header:
 #import <bundlepush/BundlepushNative.h>
 ```
 
+If you're not familiar with bridging header files, modern Xcode projects can be challenging to configure. While we've provided a reference article above, we welcome contributions of additional helpful resources through a pull request.
+
 ---
 
 ## 2. Add a snippet of code to perform the update
@@ -24,7 +26,7 @@ Inside your `AppDelegate.swift`, locate the method:
 ```swift
   override func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
     // Your existing code...
-    BundlepushNative.setupWithAppId("YOUR_APP_ID")
+    BundlepushNative.check(forUpdates: "YOUR_APP_ID")
     // Your existing code...
   }
 ```

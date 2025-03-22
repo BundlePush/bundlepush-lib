@@ -24,7 +24,7 @@ Inside your `AppDelegate.m` or `AppDelegate.mm`, locate the method:
     // Your existing code...
 
     // Initialize BundlePush with your App ID
-    [BundlepushNative setupWithAppID:@"YOUR_APP_ID"];
+    [BundlepushNative checkForUpdates:@"YOUR_APP_ID"];
 
     // Your existing code...
 }
