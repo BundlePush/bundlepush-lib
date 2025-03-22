@@ -1,5 +1,22 @@
-import Bundlepush from './NativeBundlepush';
+import { NativeModules, Platform } from 'react-native';
 
-export function performOTACheck(): void {
-  return Bundlepush.performOTACheck();
+const LINKING_ERROR =
+  `The package 'bundlepush' doesn't seem to be linked. Make sure: \n\n` +
+  Platform.select({ ios: "- You have run 'pod install'\n", default: '' }) +
+  '- You rebuilt the app after installing the package\n' +
+  '- You are not using Expo Go\n';
+
+const Bundlepush = NativeModules.Bundlepush
+  ? NativeModules.Bundlepush
+  : new Proxy(
+      {},
+      {
+        get() {
+          throw new Error(LINKING_ERROR);
+        },
+      }
+    );
+
+export function multiply(a: number, b: number): Promise<number> {
+  return Bundlepush.multiply(a, b);
 }

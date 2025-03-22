@@ -1,6 +1,6 @@
 
-#import "generated/RNBundlepushSpec/RNBundlepushSpec.h"
+#import <React/RCTBridgeModule.h>
 
-@interface Bundlepush : NSObject <NativeBundlepushSpec>
+@interface Bundlepush : NSObject <RCTBridgeModule>
 
 @end
