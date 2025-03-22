@@ -17,11 +17,10 @@ const loginCommand = new Command('login')
 
 const appsCommand = new Command('app').description('Organization apps');
 
-const listAppsCommand = new Command('list')
-  .description('List organization apps')
-  .action(() => console.log('apps list')); // TODO
-
-appsCommand.addCommand(listAppsCommand);
+// const listAppsCommand = new Command('list')
+//   .description('List organization apps')
+//   .action(() => console.log('apps list')); // TODO
+// appsCommand.addCommand(listAppsCommand);
 
 const releaseCommand = new Command('release')
   .description('Release a new bundle of the app')
