@@ -1,4 +1,4 @@
-# BundlePush
+# BundlePush Documentation
 
 Lightning-Fast App Deployment.
 
@@ -27,7 +27,7 @@ For those new to OTA updates, we recommend reading [this excellent article](http
 
 **Important:** Always thoroughly test your updates in a development environment before deploying to production users.
 
-## Setup
+## Let's code
 
 ### Step 1 - Account
 
@@ -57,7 +57,7 @@ Visit [BundlePush Dashboard](https://dash.bundlepu.sh), create an account, and s
 
 2. **Add the native code** to iOS:
 
-- If you're using Objective-C++ (`AppDelegate.mm`), follow the documentation in [Objective-C integration guide](docs/objective-c.md)
+- If you're using Objective-C (`AppDelegate.mm`), follow the documentation in [Objective-C integration guide](docs/objective-c.md)
 - If you're using Swift (`AppDelegate.swift`), follow the documentation in [Swift integration guide](docs/swift.md)
 - **Android support** is not available yet, but will be coming soon.
 
