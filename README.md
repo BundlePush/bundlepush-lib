@@ -23,7 +23,7 @@ Over-the-Air (OTA) updates involve some complexity, but they offer significant a
 - Users receive updates faster, improving their experience
 - You can rollback problematic updates quickly if issues arise
 
-For those new to OTA updates, we recommend reading [this excellent article](https://dev.to/ponikar/ota-updates-in-react-native-1pbo) to understand the underlying concepts.
+For those new to OTA updates, we recommend reading <a href="https://dev.to/ponikar/ota-updates-in-react-native-1pbo" target="_blank">this excellent article</a> to understand the underlying concepts.
 
 **Important:** Always thoroughly test your updates in a development environment before deploying to production users.
 
@@ -31,7 +31,7 @@ For those new to OTA updates, we recommend reading [this excellent article](http
 
 ### Step 1 - Account
 
-Visit [BundlePush Dashboard](https://dash.bundlepu.sh), create an account, and set up your first app.
+Visit <a href="https://dash.bundlepu.sh" target="_blank">BundlePush Dashboard</a>, create an account, and set up your first app.
 
 ### Step 2 - Add the library
 
@@ -57,8 +57,8 @@ Visit [BundlePush Dashboard](https://dash.bundlepu.sh), create an account, and s
 
 2. **Add the native code** to iOS:
 
-- If you're using Objective-C (`AppDelegate.mm`), follow the documentation in [Objective-C integration guide](docs/objective-c.md)
-- If you're using Swift (`AppDelegate.swift`), follow the documentation in [Swift integration guide](docs/swift.md)
+- If you're using Objective-C (`AppDelegate.mm`), follow the documentation in <a href="docs/objective-c.md" target="_blank">Objective-C integration guide</a>
+- If you're using Swift (`AppDelegate.swift`), follow the documentation in <a href="docs/swift.md" target="_blank">Swift integration guide</a>
 - **Android support** is not available yet, but will be coming soon.
 
 4. **Compile and run** your app to confirm that everything is configured correctly.
@@ -77,16 +77,16 @@ You can follow the steps below to test your app with BundlePush:
    ```bash
    npx bundlepush release --app <YOUR_APP_ID>
    ```
-5. After the app is deployed, open the [BundlePush Dashboard](https://dash.bundlepu.sh).
+5. After the app is deployed, open the <a href="https://dash.bundlepu.sh" target="_blank">BundlePush Dashboard</a>.
 6. In the dashboard, navigate to the current bundle:
    - Add the version and build number of your app in the Versions section.
-   - Enable **"Dev Mode"**.
+   - Enable **"Development Mode"**.
 7. Build the app in debug mode. Wait a few seconds for the bundle to download in the background.
 8. Restart the app. The newly deployed bundle should be installed and running.
 
 ## Deploy in production
 
-Deployments to production are not available in debug builds. Ensure you are using a production (release) build of your app. In the [BundlePush Dashboard](https://dash.bundlepu.sh):
+Deployments to production are not available in debug builds. Ensure you are using a production (release) build of your app. In the <a href="https://dash.bundlepu.sh" target="_blank">BundlePush Dashboard</a>:
 
 1. Select the bundle you want to release.
 2. Specify all app versions (and build numbers) that the bundle should be available for.
@@ -101,7 +101,7 @@ If you are not seeing the updated bundle, please verify the following:
 1. **Native Configuration**: Ensure that BundlePush is correctly installed and configured in your app's native code.
 2. **App ID Match**: Double-check that the app ID you used to release the bundle matches the app ID in your code.
 3. **Version and Build Number**: Confirm that the version and build number you set in the dashboard match the installed app's version and build number.
-4. **Bundle Availability**: Make sure that the bundle is in **Dev Mode** if you are testing in debug, or is **enabled** if you are running in production.
+4. **Bundle Availability**: Make sure that the bundle is in **Development Mode** if you are testing in debug, or is **enabled** if you are running in production.
 
 ## Contributing
 

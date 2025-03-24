@@ -1,6 +1,6 @@
 {
   "name": "bundlepush",
-  "version": "0.1.10",
+  "version": "0.1.11",
   "description": "Straightforward OTA updates",
   "source": "./src/index.tsx",
   "main": "./lib/commonjs/index.js",
